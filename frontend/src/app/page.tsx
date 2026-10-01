@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SourceRecords from './SourceRecords';
 
 type Analysis = {
   status: string;
@@ -157,7 +158,7 @@ export default function Home() {
         <p role="status" style={{ margin: '24px 0', lineHeight: 1.6 }}>
           {status}
         </p>
-
+        <SourceRecords />
         {greeting && (
           <section style={cardStyle}>
             <h2>AI greeting</h2>
