@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import SourceRecords from './SourceRecords';
+import ReviewPanel from './ReviewPanel';
 
 type Analysis = {
   status: string;
@@ -257,7 +258,7 @@ export default function Home() {
                 </div>
               </section>
             </div>
-
+            <ReviewPanel aiDraft={analysis.ai_draft} />
             <p style={{ marginTop: 20, color: '#475569' }}>
               {analysis.human_review_required
                 ? 'Human review required. '
