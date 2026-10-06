@@ -1,0 +1,160 @@
+[
+  {
+    "policy_id": "POL-1007",
+    "customer_id": "CUS-1001",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2026-08-19",
+    "cover_end_date": "2027-08-19",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5001", "registration": "CA 123-456", "vin": "VIN5001THABO0001", "make": "Toyota", "model": "Corolla", "year": 2021 }
+    ],
+    "listed_drivers": [
+      { "name": "Thabo Mokoena", "id_number": "8808125800087", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2010",
+    "customer_id": "CUS-1002",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2025-01-01",
+    "cover_end_date": "2027-01-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5002", "registration": "GP 234-567", "vin": "VIN5002LINDI0002", "make": "Volkswagen", "model": "Polo", "year": 2022 }
+    ],
+    "listed_drivers": [
+      { "name": "Lindiwe Dlamini", "id_number": "9002104800088", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2011",
+    "customer_id": "CUS-1003",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2025-03-01",
+    "cover_end_date": "2027-03-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5003", "registration": "NW 345-678", "vin": "VIN5003JOHAN0003", "make": "Ford", "model": "Ranger", "year": 2020 }
+    ],
+    "listed_drivers": [
+      { "name": "Johan van der Merwe", "id_number": "7606155800089", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6500,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2012",
+    "customer_id": "CUS-1004",
+    "cover_type": "third_party_only",
+    "cover_start_date": "2025-05-01",
+    "cover_end_date": "2027-05-01",
+    "wording_doc_id": "WORD-TP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5004", "registration": "WC 456-789", "vin": "VIN5004NOMVU0004", "make": "Nissan", "model": "Micra", "year": 2019 }
+    ],
+    "listed_drivers": [
+      { "name": "Nomvula Khumalo", "id_number": "9412034800081", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 5500,
+      "additional_excesses": []
+    }
+  },
+  {
+    "policy_id": "POL-2013",
+    "customer_id": "CUS-1005",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2024-11-01",
+    "cover_end_date": "2026-11-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5005", "registration": "MP 567-890", "vin": "VIN5005PIETE0005", "make": "Isuzu", "model": "D-Max", "year": 2021 }
+    ],
+    "listed_drivers": [
+      { "name": "Pieter Botha", "id_number": "6911205800082", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2014",
+    "customer_id": "CUS-1006",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2025-02-01",
+    "cover_end_date": "2027-02-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5006", "registration": "LP 678-901", "vin": "VIN5006ZANEL0006", "make": "Hyundai", "model": "Grand i10", "year": 2023 }
+    ],
+    "listed_drivers": [
+      { "name": "Zanele Nkosi", "id_number": "9308164800083", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2015",
+    "customer_id": "CUS-1007",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2025-06-01",
+    "cover_end_date": "2027-06-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5007", "registration": "EC 789-012", "vin": "VIN5007SIPHO0007", "make": "Kia", "model": "Rio", "year": 2022 }
+    ],
+    "listed_drivers": [
+      { "name": "Sipho Mahlangu", "id_number": "8503215800084", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  },
+  {
+    "policy_id": "POL-2016",
+    "customer_id": "CUS-1008",
+    "cover_type": "comprehensive",
+    "cover_start_date": "2025-04-01",
+    "cover_end_date": "2027-04-01",
+    "wording_doc_id": "WORD-COMP",
+    "vehicles": [
+      { "vehicle_id": "VEH-5008", "registration": "FS 890-123", "vin": "VIN5008ANNEL0008", "make": "Renault", "model": "Kwid", "year": 2023 }
+    ],
+    "listed_drivers": [
+      { "name": "Annelize Pretorius", "id_number": "9107264800085", "relationship": "policyholder" }
+    ],
+    "excess": {
+      "basic_excess": 6000,
+      "additional_excesses": [
+        { "reason": "Named/inexperienced driver excess", "amount": 3500, "applies_if": "unlisted_or_inexperienced_driver" }
+      ]
+    }
+  }
+]

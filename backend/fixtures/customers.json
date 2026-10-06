@@ -1,0 +1,58 @@
+[
+  {
+    "customer_id": "CUS-1001",
+    "name": "Thabo Mokoena",
+    "id_number": "8808125800087",
+    "email": "thabo.mokoena@example.co.za",
+    "phone": "+27 82 100 1001"
+  },
+  {
+    "customer_id": "CUS-1002",
+    "name": "Lindiwe Dlamini",
+    "id_number": "9002104800088",
+    "email": "lindiwe.dlamini@example.co.za",
+    "phone": "+27 83 100 1002"
+  },
+  {
+    "customer_id": "CUS-1003",
+    "name": "Johan van der Merwe",
+    "id_number": "7606155800089",
+    "email": "johan.vandermerwe@example.co.za",
+    "phone": "+27 84 100 1003"
+  },
+  {
+    "customer_id": "CUS-1004",
+    "name": "Nomvula Khumalo",
+    "id_number": "9412034800081",
+    "email": "nomvula.khumalo@example.co.za",
+    "phone": "+27 71 100 1004"
+  },
+  {
+    "customer_id": "CUS-1005",
+    "name": "Pieter Botha",
+    "id_number": "6911205800082",
+    "email": "pieter.botha@example.co.za",
+    "phone": "+27 72 100 1005"
+  },
+  {
+    "customer_id": "CUS-1006",
+    "name": "Zanele Nkosi",
+    "id_number": "9308164800083",
+    "email": "zanele.nkosi@example.co.za",
+    "phone": "+27 73 100 1006"
+  },
+  {
+    "customer_id": "CUS-1007",
+    "name": "Sipho Mahlangu",
+    "id_number": "8503215800084",
+    "email": "sipho.mahlangu@example.co.za",
+    "phone": "+27 74 100 1007"
+  },
+  {
+    "customer_id": "CUS-1008",
+    "name": "Annelize Pretorius",
+    "id_number": "9107264800085",
+    "email": "annelize.pretorius@example.co.za",
+    "phone": "+27 76 100 1008"
+  }
+]

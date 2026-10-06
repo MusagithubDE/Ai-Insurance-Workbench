@@ -1,0 +1,41 @@
+[
+  {
+    "doc_id": "WORD-COMP",
+    "product": "Comprehensive motor cover",
+    "versions": [
+      {
+        "version": "v1",
+        "effective_from": "2020-01-01",
+        "effective_to": "2026-01-15",
+        "sections": [
+          { "section": "Section 3 - Own Damage Cover", "text": "We will cover loss or damage to your vehicle caused by an accident, fire, theft or hail, subject to the excess shown in your policy schedule." },
+          { "section": "Section 7 - Excess", "text": "The basic excess shown in your schedule applies to every claim. An additional named/inexperienced driver excess applies if the vehicle was being driven by a driver not listed on your schedule, or a driver with less than 2 years' experience." }
+        ]
+      },
+      {
+        "version": "v2",
+        "effective_from": "2026-01-16",
+        "effective_to": null,
+        "sections": [
+          { "section": "Section 3 - Own Damage Cover", "text": "We will cover loss or damage to your vehicle caused by an accident, fire, theft, hail or other defined event, subject to the excess shown in your policy schedule and provided your policy was in force on the date of the event." },
+          { "section": "Section 7 - Excess", "text": "The basic excess shown in your schedule applies to every claim. An additional named/inexperienced driver excess applies if the vehicle was being driven by a driver not listed on your schedule, or a driver with less than 2 years' experience. Excesses are reviewed annually." }
+        ]
+      }
+    ]
+  },
+  {
+    "doc_id": "WORD-TP",
+    "product": "Third-party only cover",
+    "versions": [
+      {
+        "version": "v1",
+        "effective_from": "2020-01-01",
+        "effective_to": null,
+        "sections": [
+          { "section": "Section 2 - What Is Covered", "text": "This policy covers your legal liability for damage you cause to someone else's vehicle or property. It does not cover loss of or damage to your own vehicle, however caused." },
+          { "section": "Section 7 - Excess", "text": "The basic excess shown in your schedule applies to any claim we accept under this policy." }
+        ]
+      }
+    ]
+  }
+]

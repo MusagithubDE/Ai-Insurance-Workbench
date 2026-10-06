@@ -1,0 +1,10 @@
+[
+  { "bill_id": "BILL-1007-2026-08", "policy_id": "POL-1007", "month": "2026-08", "status": "paid", "amount": 1850, "debit_date": "2026-08-01" },
+  { "bill_id": "BILL-2010-2026-06", "policy_id": "POL-2010", "month": "2026-06", "status": "paid", "amount": 1420, "debit_date": "2026-06-01" },
+  { "bill_id": "BILL-2011-2026-07", "policy_id": "POL-2011", "month": "2026-07", "status": "bounced", "amount": 1990, "debit_date": "2026-07-01", "bounce_reason": "insufficient_funds" },
+  { "bill_id": "BILL-2012-2026-04", "policy_id": "POL-2012", "month": "2026-04", "status": "paid", "amount": 640, "debit_date": "2026-04-01" },
+  { "bill_id": "BILL-2013-2026-03", "policy_id": "POL-2013", "month": "2026-03", "status": "paid", "amount": 2210, "debit_date": "2026-03-01" },
+  { "bill_id": "BILL-2014-2026-05", "policy_id": "POL-2014", "month": "2026-05", "status": "paid", "amount": 980, "debit_date": "2026-05-01" },
+  { "bill_id": "BILL-2015-2026-09", "policy_id": "POL-2015", "month": "2026-09", "status": "paid", "amount": 1105, "debit_date": "2026-09-01" },
+  { "bill_id": "BILL-2016-2026-02", "policy_id": "POL-2016", "month": "2026-02", "status": "paid", "amount": 890, "debit_date": "2026-02-01" }
+]

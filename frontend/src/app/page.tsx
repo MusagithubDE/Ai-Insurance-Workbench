@@ -1,202 +1,217 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AlertCircleIcon, ArrowRightIcon, SearchIcon, ServerCrashIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ApiError, getClaimsQueue } from "@/lib/api";
+import type { AssessmentStatus, ClaimQueueItem } from "@/lib/types";
+import { ASSESSMENT_STATUS_VISUAL, formatSaDate } from "@/lib/status";
+import { cn } from "@/lib/utils";
 
-type Records = {
-  data_mode: string;
-  claim: Record<string, string>;
-  policy: Record<string, string>;
-  incident_report: Record<string, string>;
-};
-type Analysis = {
-  analysis_id: string;
-  created_at: string;
-  model: string;
-  records: Records;
-  ai_draft: string;
-  verified_checks: {
-    cover_start_date: string;
-    policy_source: string;
-    dates_conflict: boolean;
-    comparisons: { source_id: string; incident_date: string; relation_to_cover_start: string }[];
-  };
-};
-type ReviewSummary = { id: string; analysis_id: string; reviewer: string; saved_at: string };
-type Review = ReviewSummary & { reviewed_note: string; analysis: Analysis };
-const API = 'http://127.0.0.1:8000';
-const card: CSSProperties = { background: 'white', border: '1px solid #cbd5e1', borderRadius: 12, padding: 24, marginTop: 20 };
-const grid: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 20 };
-const field: CSSProperties = { display: 'block', width: '100%', boxSizing: 'border-box', margin: '8px 0 18px', padding: 12, border: '1px solid #94a3b8', borderRadius: 8, background: 'white', color: '#0f172a', font: 'inherit' };
-const button: CSSProperties = { padding: '11px 16px', border: '1px solid #94a3b8', borderRadius: 8, background: 'white', color: '#0f172a', cursor: 'pointer' };
-const textStyle: CSSProperties = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.7 };
+type StatusFilter = "all" | AssessmentStatus | "not_run";
 
-async function request<T>(path: string, body?: unknown, post = false): Promise<T> {
-  const response = await fetch(`${API}${path}`, {
-    method: post ? 'POST' : 'GET',
-    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: 'no-store', signal: AbortSignal.timeout(path === '/demo/analyse' || path === '/ai/test' ? 200000 : 15000),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Request failed (HTTP ${response.status}). Check the required fields.`);
-  return data;
-}
-const errorText = (error: unknown) => error instanceof Error ? error.message : 'Request failed.';
+const FILTERS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "not_run", label: "Not yet run" },
+  { value: "READY_FOR_HUMAN_REVIEW", label: "Ready" },
+  { value: "REVIEW_REQUIRED", label: "Review required" },
+  { value: "INCOMPLETE", label: "Incomplete" },
+];
 
-function Evidence({ records }: { records: Records }) {
-  return <div style={grid}>{[
-    ['Claim record', records.claim], ['Policy record', records.policy], ['Incident report', records.incident_report],
-  ].map(([title, values]) => <article key={String(title)} style={card}>
-    <h3>{String(title)}</h3>
-    <dl>{Object.entries(values).map(([key, value]) => <div key={key} style={{ marginTop: 12 }}>
-      <dt style={{ color: '#475569', textTransform: 'capitalize' }}>{key.replaceAll('_', ' ')}</dt>
-      <dd style={{ margin: '4px 0', overflowWrap: 'anywhere' }}>{value}</dd>
-    </div>)}</dl>
-  </article>)}</div>;
-}
+export default function QueuePage() {
+  const router = useRouter();
+  const [claims, setClaims] = useState<ClaimQueueItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<StatusFilter>("all");
 
-function AnalysisView({ analysis }: { analysis: Analysis }) {
-  return <>
-    <Evidence records={analysis.records} />
-    <div style={grid}>
-      <section style={card}>
-        <h2>Calculated date checks</h2>
-        <p>Python compares recorded dates; it does not establish the actual incident date.</p>
-        <p>Cover start: <strong>{analysis.verified_checks.cover_start_date}</strong> [{analysis.verified_checks.policy_source}]</p>
-        {analysis.verified_checks.comparisons.map(item => <p key={item.source_id}>
-          <strong>{item.source_id}</strong>: {item.incident_date} — <strong>{item.relation_to_cover_start.toUpperCase()}</strong> cover start.
-        </p>)}
-        <p style={{ color: '#9a3412' }}>{analysis.verified_checks.dates_conflict ? 'The incident records contain conflicting dates.' : 'The incident dates match.'}</p>
-        <p><strong>Coverage: undetermined. No claim decision made.</strong></p>
-      </section>
-      <section style={card}>
-        <h2>Original AI draft</h2>
-        <p style={{ color: '#92400e' }}>Requires human review. Check each statement against the evidence.</p>
-        <div style={textStyle}>{analysis.ai_draft}</div>
-        <p style={{ color: '#475569', fontSize: 13 }}>Model: {analysis.model}</p>
-      </section>
-    </div>
-  </>;
-}
-
-function downloadReview(review: Review) {
-  const note = [
-    'AI INSURANCE WORKBENCH — SYNTHETIC DEMONSTRATION', '',
-    `Review ID: ${review.id}`, `Analysis ID: ${review.analysis_id}`,
-    `Reviewer (self-declared): ${review.reviewer}`, `Saved at: ${review.saved_at}`,
-    `Model: ${review.analysis.model}`, 'Coverage: undetermined', 'Claim decision: not made', '',
-    'REVIEWER CONFIRMATION', 'The reviewer confirmed checking the note against the records. This is a self-declared review.', '',
-    'ORIGINAL AI DRAFT', review.analysis.ai_draft, '', 'REVIEWED NOTE', review.reviewed_note, '',
-    'SOURCE RECORDS', JSON.stringify(review.analysis.records, null, 2), '',
-    'CALCULATED DATE CHECKS', JSON.stringify(review.analysis.verified_checks, null, 2),
-  ].join('\n');
-  const url = URL.createObjectURL(new Blob([note], { type: 'text/plain;charset=utf-8' }));
-  const link = document.createElement('a');
-  link.href = url; link.download = `ACC-2048-review-${review.id}.txt`;
-  document.body.appendChild(link); link.click(); link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export default function Home() {
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [records, setRecords] = useState<Records | null>(null);
-  const [reviewer, setReviewer] = useState('');
-  const [note, setNote] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState('Ready');
-  const [reviews, setReviews] = useState<ReviewSummary[]>([]);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [opened, setOpened] = useState<Review | null>(null);
-
-  async function run(action: () => Promise<void>) {
-    setBusy(true);
-    try { await action(); } catch (error) { setStatus(errorText(error)); }
-    finally { setBusy(false); }
+  function load() {
+    setError(null);
+    setClaims(null);
+    getClaimsQueue()
+      .then((res) => setClaims(res.claims))
+      .catch((err: unknown) => {
+        setError(err instanceof ApiError ? err.message : "Something went wrong loading the queue.");
+      });
   }
-  async function loadHistory() {
-    const data = await request<{ reviews: ReviewSummary[] }>('/reviews');
-    setReviews(data.reviews); setHistoryLoaded(true);
-  }
-  function edit() { setConfirmed(false); setDirty(true); }
-  const canSave = Boolean(analysis && reviewer.trim() && note.trim() && confirmed && dirty && !busy);
-  const disabledStyle = (disabled: boolean): CSSProperties => ({ ...button, opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' });
 
-  return <main style={{ minHeight: '100vh', background: '#f1f5f9', color: '#0f172a', padding: '40px 24px', fontFamily: 'Arial, sans-serif', lineHeight: 1.6 }}>
-    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-      <p>MUSA &amp; CEBO · SYNTHETIC DATA DEMONSTRATION</p>
-      <h1>AI Insurance Workbench</h1>
-      <p>Inspect evidence, check dates, review the AI draft, and save your note.</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-        <button style={button} disabled={busy} onClick={() => run(async () => {
-          await request('/health'); setStatus('Backend connected.');
-        })}>Check backend</button>
-        <button style={button} disabled={busy} onClick={() => run(async () => {
-          setStatus('Waiting for local AI…');
-          const data = await request<{ answer: string }>('/ai/test', undefined, true); setStatus(data.answer);
-        })}>Test local AI</button>
-        <button style={button} disabled={busy} onClick={() => run(async () => {
-          setRecords(await request<Records>('/demo/case')); setStatus('Source records loaded.');
-        })}>View source records</button>
-        <button style={disabledStyle(busy || dirty)} disabled={busy || dirty} onClick={() => run(async () => {
-          setStatus('Analysing with local AI. This may take a few minutes…');
-          const result = await request<Analysis>('/demo/analyse', undefined, true);
-          setAnalysis(result); setNote(result.ai_draft); setConfirmed(false); setDirty(true);
-          setRecords(null); setStatus('Analysis ready. Review and correct the draft, then save your note.');
-        })}>Analyse demo case</button>
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount; load() resets state before the request
+  useEffect(load, []);
+
+  const filtered = useMemo(() => {
+    if (!claims) return [];
+    const q = search.trim().toLowerCase();
+    return claims.filter((c) => {
+      const matchesSearch =
+        !q ||
+        c.claim_id.toLowerCase().includes(q) ||
+        c.customer_name.toLowerCase().includes(q) ||
+        c.vehicle_registration.toLowerCase().includes(q);
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "not_run" ? c.last_run_status === null : c.last_run_status === filter);
+      return matchesSearch && matchesFilter;
+    });
+  }, [claims, search, filter]);
+
+  return (
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 p-8">
+      <div>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">Claims queue</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Select a claim to prepare its readiness pack before human review.
+        </p>
       </div>
-      <p role="status">{status}</p>
-      {dirty && <p style={{ color: '#92400e' }}>Your review has unsaved changes. Save it before refreshing or starting another analysis.</p>}
-      {!analysis && records && <Evidence records={records} />}
-      {analysis && <>
-        <AnalysisView analysis={analysis} />
-        <section style={card}>
-          <h2>Human review</h2>
-          <label htmlFor="reviewer">Reviewer name (self-declared)</label>
-          <input id="reviewer" style={field} maxLength={100} disabled={busy} value={reviewer} onChange={event => { setReviewer(event.target.value); edit(); }} />
-          <label htmlFor="note">Editable review note</label>
-          <textarea id="note" style={field} rows={10} maxLength={20000} disabled={busy} value={note} onChange={event => { setNote(event.target.value); edit(); }} />
-          <label><input type="checkbox" disabled={busy} checked={confirmed} onChange={event => setConfirmed(event.target.checked)} /> I checked this note against the displayed records. The actual incident date and coverage still require verification.</label>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
-            <button style={disabledStyle(!canSave)} disabled={!canSave} onClick={() => run(async () => {
-              const saved = await request<Review>('/reviews', { analysis_id: analysis.analysis_id, reviewer, reviewed_note: note, confirmed }, true);
-              setOpened(saved); setDirty(false); setStatus('Review saved to the backend. You can reopen it from history.');
-              try { await loadHistory(); } catch { setStatus('Review saved. History could not refresh; click Load saved reviews to retry.'); }
-            })}>Save review</button>
-            <button style={button} disabled={busy || !dirty} onClick={() => {
-              if (!window.confirm('Discard this unsaved review?')) return;
-              setAnalysis(null); setNote(''); setConfirmed(false); setDirty(false); setStatus('Unsaved review discarded.');
-            }}>Discard unsaved review</button>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-sm">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by claim, customer or plate…"
+            className="pl-8"
+          />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                filter === f.value
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          <ServerCrashIcon className="size-5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium">Couldn&apos;t reach the backend</p>
+            <p className="text-destructive/80">{error}</p>
           </div>
-        </section>
-      </>}
-      <section style={card}>
-        <h2>Saved review history</h2>
-        <p>Saved reviews can be reopened after refreshing or restarting the backend. Unsaved edits are not recovered.</p>
-        <button style={button} disabled={busy} onClick={() => run(async () => {
-          await loadHistory(); setStatus('Saved review history loaded.');
-        })}>{historyLoaded ? 'Refresh saved reviews' : 'Load saved reviews'}</button>
-        {historyLoaded && reviews.length === 0 && <p>No reviews saved yet.</p>}
-        {reviews.map(review => <div key={review.id} style={{ borderTop: '1px solid #e2e8f0', padding: '14px 0', marginTop: 12 }}>
-          <strong>{review.reviewer}</strong> · {new Date(review.saved_at).toLocaleString()}{' '}
-          <button style={button} disabled={busy} onClick={() => run(async () => {
-            setOpened(await request<Review>(`/reviews/${review.id}`)); setStatus('Saved review opened below.');
-          })}>Open review</button>
-        </div>)}
-      </section>
-      {opened && <section style={card}>
-        <h2>Saved review</h2>
-        <p>Reviewer: {opened.reviewer} · Saved: {new Date(opened.saved_at).toLocaleString()}</p>
-        <p style={{ fontSize: 13, overflowWrap: 'anywhere' }}>Review ID: {opened.id}</p>
-        <h3>Reviewed note</h3><div style={textStyle}>{opened.reviewed_note}</div>
-        <button style={{ ...button, marginTop: 16 }} onClick={() => downloadReview(opened)}>Download saved review</button>
-        <details style={{ marginTop: 20 }}><summary>Show original AI draft and saved evidence</summary>
-          <AnalysisView analysis={opened.analysis} />
-        </details>
-      </section>}
-      <p style={{ marginTop: 24, color: '#475569' }}>Synthetic demonstration. Reviews record a self-declared check, not an authenticated approval. Coverage remains undetermined.</p>
+          <Button variant="outline" size="sm" onClick={load}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {!error && claims === null && <QueueSkeleton />}
+
+      {!error && claims !== null && claims.length === 0 && (
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-16 text-center">
+          <AlertCircleIcon className="size-6 text-muted-foreground" />
+          <p className="text-sm font-medium">No claims in the queue</p>
+          <p className="text-sm text-muted-foreground">Synthetic fixtures haven&apos;t been seeded yet.</p>
+        </div>
+      )}
+
+      {!error && claims !== null && claims.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Claim</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Incident date</TableHead>
+                <TableHead>Vehicle</TableHead>
+                <TableHead>Age</TableHead>
+                <TableHead>Last run</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((claim) => (
+                <TableRow key={claim.claim_id}>
+                  <TableCell>
+                    <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                      {claim.claim_id}
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-medium">{claim.customer_name}</TableCell>
+                  <TableCell className="tabular-nums">{formatSaDate(claim.incident_date)}</TableCell>
+                  <TableCell className="font-mono text-xs">{claim.vehicle_registration}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{claim.age_days}d</TableCell>
+                  <TableCell>
+                    {claim.last_run_status ? (
+                      <StatusPill status={claim.last_run_status} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Not yet run</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                      onClick={() => router.push(`/assessments/${claim.claim_id}`)}
+                    >
+                      Prepare review
+                      <ArrowRightIcon className="size-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filtered.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
+                    No claims match your search or filter.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
-  </main>;
+  );
+}
+
+function StatusPill({ status }: { status: AssessmentStatus }) {
+  const visual = ASSESSMENT_STATUS_VISUAL[status];
+  const Icon = visual.icon;
+  return (
+    <Badge variant="outline" className={cn("gap-1 border", visual.text, visual.bg, visual.border)}>
+      <Icon className="size-3" />
+      {visual.label}
+    </Badge>
+  );
+}
+
+function QueueSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div className="divide-y divide-border">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 p-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="ml-auto h-7 w-28 rounded-md" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
